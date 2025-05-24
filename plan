@@ -1,0 +1,34 @@
+web4_intelligence/
+├── README.md
+├── rust_core/
+│   ├── Cargo.toml
+│   └── src/
+│       └── main.rs  # Actix-web server calling Python ML backend
+├── ml_backend/
+│   ├── app/
+│   │   ├── agents/
+│   │   │   ├── reasoning_agent.py  # Deductive rule-based reasoning
+│   │   │   ├── pattern_agent.py    # Pattern recognition using ML
+│   │   │   └── response_agent.py   # NLP response generator
+│   │   ├── api.py  # Routes to agents
+│   │   └── main.py  # FastAPI app entrypoint
+│   └── requirements.txt
+├── data/
+│   ├── graph_schema.graphql  # Graph memory schema
+│   └── init_data.json
+├── docker/
+│   ├── rust.Dockerfile  # Rust/Actix container
+│   └── python.Dockerfile  # FastAPI ML backend container
+└── docker-compose.yml
+
+
+Now I’ll implement the core files:
+
+1. rust_core/src/main.rs: Actix-web server that calls the ML backend.
+
+
+2. ml_backend/app/main.py: FastAPI app setup.
+
+
+3. ml_backend/app/api.py: Routes calling the agents.
+
