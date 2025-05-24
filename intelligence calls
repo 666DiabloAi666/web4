@@ -1,0 +1,85 @@
+web4_intelligence/
+├── README.md
+├── rust_core/
+│   ├── Cargo.toml
+│   └── src/
+│       └── main.rs
+│       
+│       // main.rs
+│       use actix_web::{web, App, HttpServer, Responder, HttpResponse};
+│       use serde::Deserialize;
+│
+│       #[derive(Deserialize)]
+│       struct UserInput {
+│           message: String,
+│       }
+│
+│       async fn intelligent_reply(input: web::Json<UserInput>) -> impl Responder {
+│           let client = reqwest::Client::new();
+│           let res = client.post("http://localhost:8000/respond")
+│               .json(&*input)
+│               .send()
+│               .await;
+│
+│           match res {
+│               Ok(response) => {
+│                   let text = response.text().await.unwrap_or("Internal Error".into());
+│                   HttpResponse::Ok().body(text)
+│               },
+│               Err(_) => HttpResponse::InternalServerError().body("ML service unavailable"),
+│           }
+│       }
+│
+│       #[actix_web::main]
+│       async fn main() -> std::io::Result<()> {
+│           HttpServer::new(|| {
+│               App::new().route("/ask", web::post().to(intelligent_reply))
+│           })
+│           .bind("127.0.0.1:8080")?
+│           .run()
+│           .await
+│       }
+├── ml_backend/
+│   ├── app/
+│   │   ├── agents/
+│   │   │   ├── reasoning_agent.py
+│   │   │   ├── pattern_agent.py
+│   │   │   └── response_agent.py
+│   │   ├── api.py
+│   │   │
+│   │   │   # api.py
+│   │   │   from fastapi import APIRouter, HTTPException
+│   │   │   from pydantic import BaseModel
+│   │   │   from .agents.response_agent import generate_response
+│   │   │
+│   │   │   router = APIRouter()
+│   │   │
+│   │   │   class Query(BaseModel):
+│   │   │       message: str
+│   │   │
+│   │   │   @router.post("/respond")
+│   │   │   async def respond(query: Query):
+│   │   │       try:
+│   │   │           return {"response": generate_response(query.message)}
+│   │   │       except Exception as e:
+│   │   │           raise HTTPException(status_code=500, detail=str(e))
+│   │   └── main.py
+│   │   
+│   │       # main.py
+│   │       from fastapi import FastAPI
+│   │       from . import api
+│   │       
+│   │       app = FastAPI()
+│   │       app.include_router(api.router)
+│   └── requirements.txt
+│       
+│       fastapi
+│       uvicorn
+│       pydantic
+├── data/
+│   ├── graph_schema.graphql
+│   └── init_data.json
+├── docker/
+│   ├── rust.Dockerfile
+│   └── python.Dockerfile
+└── docker-compose.yml
